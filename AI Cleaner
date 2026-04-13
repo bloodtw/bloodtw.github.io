@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>✨ AI 清潔排班神器</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <meta name="apple-mobile-web-app-title" content="AI 排班">
+
+  <link rel="apple-touch-icon" href="https://via.placeholder.com/180/007AFF/FFFFFF?text=AI">
+
+  <meta name="mobile-web-app-capable" content="yes">	
+  <style>
+    :root {
+      --system-blue: #007AFF;
+      --system-bg: #F2F2F7;
+      --card-bg: #FFFFFF;
+      --text-primary: #000000;
+      --text-secondary: #3C3C43;
+      --border-color: #C6C6C8;
+      --danger: #FF3B30;
+      --success: #34C759;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background-color: var(--system-bg);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 100vw;
+      margin: 0 auto;
+      padding-bottom: 40px;
+      overflow-x: hidden;
+    }
+
+    /* 在桌機或平板上顯示時，限制成手機大小置中 */
+    @media (min-width: 480px) {
+      .app-container {
+        max-width: 430px; /* iPhone Pro Max 的寬度 */
+        min-height: 100vh;
+        background: var(--system-bg);
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      }
+      body {
+        background-color: #E5E5EA;
+        display: flex;
+        justify-content: center;
+      }
+    }
+
+    .ios-header {
+      padding: 40px 16px 8px 16px;
+    }
+
+    .ios-header h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
+
+    .ios-header p {
+      font-size: 15px;
+      color: #8A8A8E;
+    }
+
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: #6D6D72;
+      margin: 24px 16px 8px 16px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+
+    .ios-group {
+      background: var(--card-bg);
+      border-radius: 10px;
+      margin: 0 16px;
+      overflow: hidden;
+    }
+
+    .ios-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border-color);
+      min-height: 48px;
+      position: relative;
+    }
+
+    .ios-row:last-child {
+      border-bottom: none;
+    }
+
+    .ios-row.column-layout {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 12px 16px 16px 16px;
+    }
+
+    .ios-row.column-layout .ios-label {
+      margin-bottom: 8px;
+      width: 100%;
+    }
+
+    .ios-row.column-layout .ios-input {
+      width: 100%;
+      padding: 0;
+      min-height: 80px;
+      resize: none;
+    }
+
+    .ios-label {
+      width: 85px;
+      font-size: 17px;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
+    .ios-input {
+      flex-grow: 1;
+      border: none;
+      font-size: 17px;
+      color: var(--text-secondary);
+      background: transparent;
+      outline: none;
+      min-width: 0;
+      font-family: inherit;
+    }
+
+    .ios-input::placeholder {
+      color: #C7C7CC;
+    }
+
+    input[type="date"], input[type="time"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+    }
+
+    .ios-button {
+      display: block;
+      width: calc(100% - 32px);
+      margin: 24px 16px;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .ios-button:active {
+      opacity: 0.7;
+      transform: scale(0.98);
+    }
+
+    .ios-button-primary {
+      background-color: var(--system-blue);
+      color: white;
+    }
+
+    .ios-button-primary:disabled {
+      background-color: #A1C6EA;
+      cursor: not-allowed;
+    }
+
+    .ios-button-secondary {
+      background-color: #E5E5EA;
+      color: var(--system-blue);
+    }
+
+    .upload-area {
+      padding: 24px 16px;
+      text-align: center;
+      transition: background-color 0.3s;
+    }
+
+    .upload-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .custom-file-upload {
+      display: inline-block;
+      color: var(--system-blue);
+      font-size: 17px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 16px 16px 16px;
+    }
+
+    .image-preview img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 0.5px solid var(--border-color);
+    }
+
+    .status-message {
+      text-align: center;
+      font-size: 15px;
+      margin: 8px 16px;
+      min-height: 20px;
+    }
+
+    .status-message.success {
+      color: var(--success);
+    }
+
+    .status-message.error {
+      color: var(--danger);
+    }
+
+    .status-message.loading {
+      color: var(--system-blue);
+    }
+
+    .required {
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="ios-header">
+      <h1>排班神器</h1>
+      <p>自動填寫表單並生成 Google 日曆事件</p>
+    </div>
+
+    <div class="section-title">API 設定</div>
+    <div class="ios-group">
+      <div class="ios-row">
+        <label class="ios-label" for="apiKey">金鑰</label>
+        <input type="password" id="apiKey" class="ios-input" placeholder="請輸入 Gemini API Key">
+      </div>
+    </div>
+
+    <div class="section-title">步驟一：上傳預約圖</div>
+    <div class="ios-group" id="dropZone">
+      <div class="upload-area">
+        <span class="upload-icon">📸</span>
+        <label for="fileInput" class="custom-file-upload">選擇圖片...</label>
+        <input type="file" id="fileInput" multiple accept="image/*">
+        <p id="fileCount" style="margin-top: 8px; font-size: 13px; color: #8A8A8E;">未選擇任何檔案</p>
+      </div>
+      <div id="imagePreview" class="image-preview"></div>
+    </div>
+
+    <button id="aiButton" class="ios-button ios-button-primary" disabled>
+      開始 AI 自動識別
+    </button>
+    <p id="statusMessage" class="status-message"></p>
+
+    <div class="section-title">步驟二：確認欄位</div>
+    <div class="ios-group">
+      <div class="ios-row">
+        <label class="ios-label" for="region">區域</label>
+        <input type="text" id="region" class="ios-input" placeholder="例：萬華">
+      </div>
+      <div class="ios-row">
+        <label class="ios-label" for="customerName">姓名</label>
+        <input type="text" id="customerName" class="ios-input" placeholder="例：趙怡如">
+      </div>
+      <div class="ios-row">
+        <label class="ios-label" for="customerPhone">電話</label>
+        <input type="tel" id="customerPhone" class="ios-input" placeholder="例：0916162448">
+      </div>
+    </div>
+
+    <div class="section-title">時間與地點</div>
+    <div class="ios-group">
+      <div class="ios-row">
+        <label class="ios-label" for="cleaningDate">日期 <span class="required">*</span></label>
+        <input type="date" id="cleaningDate" class="ios-input">
+      </div>
+      <div class="ios-row">
+        <label class="ios-label" for="startTime">開始 <span class="required">*</span></label>
+        <input type="time" id="startTime" class="ios-input">
+      </div>
+      <div class="ios-row">
+        <label class="ios-label" for="endTime">結束</label>
+        <input type="time" id="endTime" class="ios-input">
+      </div>
+      <div class="ios-row">
+        <label class="ios-label" for="cleaningAddress">地址</label>
+        <input type="text" id="cleaningAddress" class="ios-input" placeholder="例：台北市">
+      </div>
+    </div>
+
+    <div class="section-title">備註說明</div>
+    <div class="ios-group">
+      <div class="ios-row column-layout">
+        <textarea id="notes" class="ios-input" placeholder="顧客留言與要求..."></textarea>
+      </div>
+    </div>
+
+    <button id="calendarButton" class="ios-button ios-button-primary">
+      📅 新增至 Google 日曆
+    </button>
+  </div>
+
+  <script>
+    let GoogleGenerativeAI;
+
+    const apiKeyInput = document.getElementById('apiKey');
+    const fileInput = document.getElementById('fileInput');
+    const fileCount = document.getElementById('fileCount');
+    const imagePreview = document.getElementById('imagePreview');
+    const aiButton = document.getElementById('aiButton');
+    const statusMessage = document.getElementById('statusMessage');
+    const calendarButton = document.getElementById('calendarButton');
+
+    // Load API key from local storage
+    const savedApiKey = localStorage.getItem('geminiApiKey');
+    if (savedApiKey) {
+      apiKeyInput.value = savedApiKey;
+    }
+
+    apiKeyInput.addEventListener('change', (e) => {
+      localStorage.setItem('geminiApiKey', e.target.value);
+    });
+
+    let uploadedFiles = [];
+
+    const handleFiles = (files) => {
+      uploadedFiles = Array.from(files).filter(file => {
+        return file.type.startsWith('image/') || 
+               file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i) ||
+               file.type === '';
+      });
+      if (uploadedFiles.length > 0) {
+        fileCount.textContent = `已選擇 ${uploadedFiles.length} 個檔案`;
+        aiButton.disabled = false;
+        renderPreviews(uploadedFiles);
+        statusMessage.textContent = '準備就緒，您可以點擊按鈕開始！';
+        statusMessage.className = 'status-message loading';
+        
+        // Auto-trigger AI if API key is present
+        if (apiKeyInput.value.trim()) {
+           statusMessage.textContent = '偵測到圖片與 API Key，自動開始 AI 識別...';
+           aiButton.click();
+        }
+      } else {
+        fileCount.textContent = '未選擇任何檔案';
+        aiButton.disabled = true;
+        imagePreview.innerHTML = '';
+      }
+    };
+
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    // Drag and Drop support
+    const dropZone = document.getElementById('dropZone');
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = '#E5E5EA';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = 'transparent';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = 'transparent';
+      handleFiles(e.dataTransfer.files);
+    });
+
+    function renderPreviews(files) {
+      imagePreview.innerHTML = '';
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          imagePreview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function fileToGenerativePart(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Data = reader.result.split(',')[1];
+          
+          let mimeType = file.type;
+          if (!mimeType) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'heic') mimeType = 'image/heic';
+            else if (ext === 'heif') mimeType = 'image/heif';
+            else if (ext === 'png') mimeType = 'image/png';
+            else if (ext === 'webp') mimeType = 'image/webp';
+            else mimeType = 'image/jpeg';
+          }
+
+          resolve({
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType
+            }
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    aiButton.addEventListener('click', async () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        alert('請先輸入 Gemini API Key');
+        return;
+      }
+
+      try {
+        aiButton.disabled = true;
+        aiButton.textContent = '🔄 AI 識別中...';
+        statusMessage.textContent = '正在分析圖片，請稍候...';
+        statusMessage.className = 'status-message loading';
+
+        if (!GoogleGenerativeAI) {
+          try {
+            const module = await import("https://cdn.jsdelivr.net/npm/@google/generative-ai/+esm");
+            GoogleGenerativeAI = module.GoogleGenerativeAI;
+          } catch (importErr) {
+            console.error("Module import failed, trying fallback...", importErr);
+            const fallbackModule = await import("https://esm.run/@google/generative-ai");
+            GoogleGenerativeAI = fallbackModule.GoogleGenerativeAI;
+          }
+        }
+        
+        if (!GoogleGenerativeAI) {
+           throw new Error("無法加載 AI 模型模組，請檢查您的網路連線或稍後再試。");
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        
+        let targetModelName = "gemini-1.5-flash"; 
+        try {
+          statusMessage.textContent = '正在獲取可用的 AI 模型列表...';
+          const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+          if (modelsRes.ok) {
+            const modelsData = await modelsRes.json();
+            const validModels = modelsData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
+            
+            const preferred = validModels.find(m => m.name.includes("gemini-3.1-flash-lite")) ||
+                              validModels.find(m => m.name.includes("gemini-3-flash")) || 
+                              validModels.find(m => m.name.includes("gemini-3.0-flash"));
+            
+            if (preferred) {
+              targetModelName = preferred.name.replace('models/', '');
+              console.log("Dynamically selected model:", targetModelName);
+            } else {
+               targetModelName = "gemini-3.1-flash-lite-preview"; 
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to fetch model list, using fallback", e);
+        }
+
+        statusMessage.textContent = `正在使用 ${targetModelName} 分析圖片...`;
+        const model = genAI.getGenerativeModel({ model: targetModelName }); 
+
+        const imageParts = await Promise.all(uploadedFiles.map(fileToGenerativePart));
+
+        const prompt = `
+          這是一張或多張清潔預約的訂單或對話截圖。請幫我萃取以下資訊，並嚴格使用 JSON 格式輸出，不要有任何 Markdown 前綴。
+          若找不到對應資訊則保留空白字串或預設格式。
+          {
+            "region": "區域 (例如：萬華)",
+            "customerName": "客戶姓名 (例如：趙怡如)",
+            "cleaningDate": "清潔日期 (轉換為 YYYY-MM-DD 格式)",
+            "startTime": "開始時間 (轉換為 24小時制 HH:mm 格式，例如：08:00)",
+            "endTime": "結束時間 (轉換為 24小時制 HH:mm 格式，例如：12:00)",
+            "customerPhone": "客戶電話",
+            "cleaningAddress": "清潔地址",
+            "notes": "備註或要求（請務必完整擷取並保留『客服留言』與『客人端留言』的所有細節，將兩者合併放置於此欄位）"
+          }
+        `;
+
+        const result = await model.generateContent([prompt, ...imageParts]);
+        const response = await result.response;
+        let text = response.text();
+        
+        // Clean JSON text
+        text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+        const data = JSON.parse(text);
+
+        // Fill Form
+        if(data.region) document.getElementById('region').value = data.region;
+        if(data.customerName) document.getElementById('customerName').value = data.customerName;
+        if(data.cleaningDate) document.getElementById('cleaningDate').value = data.cleaningDate;
+        if(data.startTime) document.getElementById('startTime').value = data.startTime;
+        if(data.endTime) document.getElementById('endTime').value = data.endTime;
+        if(data.customerPhone) document.getElementById('customerPhone').value = data.customerPhone;
+        if(data.cleaningAddress) document.getElementById('cleaningAddress').value = data.cleaningAddress;
+        if(data.notes) document.getElementById('notes').value = data.notes;
+
+        statusMessage.textContent = '✅ AI 識別成功，已自動填表！';
+        statusMessage.className = 'status-message success';
+
+      } catch (error) {
+        console.error('Error:', error);
+        statusMessage.textContent = '❌ 識別失敗：' + error.message;
+        statusMessage.className = 'status-message error';
+      } finally {
+        aiButton.disabled = false;
+        aiButton.textContent = '開始 AI 自動識別';
+      }
+    });
+
+    calendarButton.addEventListener('click', () => {
+      const title = `【清潔排班】${document.getElementById('region').value} | ${document.getElementById('customerName').value} | ${document.getElementById('customerPhone').value}`;
+      
+      const date = document.getElementById('cleaningDate').value.replace(/-/g, ''); // YYYYMMDD
+      const startT = document.getElementById('startTime').value.replace(':', '') + '00'; // HHMMSS
+      const endT = document.getElementById('endTime').value.replace(':', '') + '00'; // HHMMSS
+
+      if (!date || !document.getElementById('startTime').value || !document.getElementById('endTime').value) {
+        alert('請確保「日期」、「開始時間」與「結束時間」已填寫！');
+        return;
+      }
+
+      const dates = `${date}T${startT}/${date}T${endT}`;
+      const location = document.getElementById('cleaningAddress').value;
+      const details = `電話：${document.getElementById('customerPhone').value}%0A備註：${document.getElementById('notes').value}`;
+
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&details=${details}&location=${encodeURIComponent(location)}`;
+      
+      window.open(url, '_blank');
+    });
+
+  </script>
+</body>
+</html>
